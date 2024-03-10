@@ -1,0 +1,8 @@
+#timeline {
+    position: relative;
+    margin: 0 auto;
+    padding: 0;
+    list-style: none;
+    width: 100%;
+    background-color: grey;
+}
