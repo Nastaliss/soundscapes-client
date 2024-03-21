@@ -59,6 +59,10 @@ const Setup = () => {
     setPlaying(false)
   }
 
+  const onBarClick = (bar: number) => {
+    apiService.transitionTo(bar)
+  }
+
   return (
     <div>
         <h1>Setup</h1>
@@ -68,7 +72,7 @@ const Setup = () => {
           {availableSongs.map((song, index) => <option key={index} value={song}>{song}</option>
           )}
         </select>
-        {songInfo && <Timeline song={songInfo}/>}
+        {songInfo && <Timeline song={songInfo} onBarClick={onBarClick}/>}
 
         <button onClick={onConfirm}>Confirm</button>
         <button onClick={onStart}>Start</button>

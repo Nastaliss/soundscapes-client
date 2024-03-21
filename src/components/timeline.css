@@ -5,4 +5,16 @@
     list-style: none;
     width: 100%;
     background-color: grey;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    .timeline-bar {
+        border: 2px solid #f1f1f1;
+        width: 100%;
+        min-width: 30px;
+        max-width: 45px;
+        cursor: pointer;
+    }
 }
