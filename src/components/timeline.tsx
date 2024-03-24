@@ -3,12 +3,12 @@ import './timeline.css'
 import { Song } from '../types'
 import TimelineBar from './TimelineBar/TimelineBar'
 
-const timeline = ({song, onBarClick}: {song: Song, onBarClick: (barCount: number) => void}) => {
+const timeline = ({song, onBarClick, currentBar}: {song: Song, onBarClick: (barCount: number) => void, currentBar: number|null}) => {
   const barCount = Math.floor(song.barCount)
   return (
     <div id="timeline">
       {[...Array(barCount).keys()].map((bar, index) =>
-        <TimelineBar key={index} className='timeline-bar' text={bar.toString()} onClick={() => onBarClick(bar)}/>
+        <TimelineBar key={index} text={bar.toString()} onClick={() => onBarClick(bar)} isCurrent={index === currentBar}/>
       )}
       <div className='timeline-bar'></div>
     </div>

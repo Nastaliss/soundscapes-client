@@ -2,22 +2,28 @@ import React from 'react'
 import Timeline from '../components/timeline'
 import { ApiService } from '../services/api.service'
 import { Song } from '../types'
+import { NoSongLoadedError } from '../services/api.service.errors'
 
 
-const Setup = () => {
+const Setup = ({currentBar, apiService}: { currentBar: number | null, apiService: ApiService}) => {
   const [songName, setSongName] = React.useState<string| undefined>(undefined)
   const [playing, setPlaying] = React.useState<boolean>(false)
-  const [transitionBar, setTransitionBar] = React.useState<number>(0)
   const [availableSongs, setAvailableSongs] = React.useState<string[]>([])
   const [songInfo, setSongInfo] = React.useState<Song|null>(null)
-  const apiService = new ApiService()
 
   React.useEffect(() => {
     (async () => {
       const songs = await apiService.getAvailableSongs()
       setAvailableSongs(songs)
+      const currentSong = await apiService.getSongInfo()
+      if (currentSong !== null) {
+        setPlaying(currentSong.playing)
+        setSongInfo(currentSong)
+        setSongName(currentSong.name)
+      }
+      console.log(currentSong)
     })()
-  }, [])
+  }, [apiService])
 
   const onConfirm = async () => {
     console.log('here', songName)
@@ -35,20 +41,6 @@ const Setup = () => {
     setSongName(e.target.value)
   }
 
-  const onTransitionInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let bar = parseInt(e.target.value)
-    if (isNaN(bar) || bar < 0) {
-      bar = 0
-    } else if (bar > 100) {
-    }
-    console.log(bar)
-    setTransitionBar(bar)
-  }
-
-  const onTransitionButtonPress = () => {
-    apiService.transitionTo(transitionBar)
-  }
-
   const onStart = () => {
     apiService.play()
     setPlaying(true)
@@ -60,7 +52,15 @@ const Setup = () => {
   }
 
   const onBarClick = (bar: number) => {
-    apiService.transitionTo(bar)
+    try {
+      apiService.transitionTo(bar)
+    }  catch (err) {
+      if (err instanceof NoSongLoadedError) {
+        console.error(err.message)
+      }
+      console.log("aqaa")
+      console.error(err)
+    }
   }
 
   return (
@@ -72,17 +72,11 @@ const Setup = () => {
           {availableSongs.map((song, index) => <option key={index} value={song}>{song}</option>
           )}
         </select>
-        {songInfo && <Timeline song={songInfo} onBarClick={onBarClick}/>}
+        {songInfo && <Timeline song={songInfo} onBarClick={onBarClick} currentBar={currentBar}/>}
 
         <button onClick={onConfirm}>Confirm</button>
         <button onClick={onStart}>Start</button>
         <button onClick={onStop}>Stop</button>
-        {playing ? <div>
-          <input onChange={onTransitionInputChange} value={transitionBar}/>
-          <button onClick={onTransitionButtonPress}>Transition</button>
-        </div> : <div>
-          
-        </div>}
     </div>
   )
 }
