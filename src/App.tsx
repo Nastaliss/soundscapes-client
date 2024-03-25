@@ -5,18 +5,18 @@ import { ApiService } from './services/api.service';
 
 function App() {
   const apiService = useRef<ApiService | null>(null)
-  const [currentBar, setCurrentBar] = React.useState<number | null>(null)
   const [isReady, setIsReady] = React.useState<boolean>(false)
+
   useEffect(() => {
     const _apiService = new ApiService()
-    const websocket = _apiService.connectToWS(setCurrentBar)
+    const websocket = _apiService.connectToWS()
     apiService.current = _apiService
     setIsReady(true)
    return () => websocket.close()
   }, [apiService])
   return (
     <div>
-      {isReady ? <Setup currentBar={currentBar}  apiService={apiService.current as unknown as ApiService}/> : "test"}
+      {isReady ? <Setup apiService={apiService.current as unknown as ApiService}/> : "test"}
     </div>
   );
 }

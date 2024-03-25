@@ -26,25 +26,38 @@ export class ApiService {
     return 'timeline'
   }
 
-  public connectToWS(onBarChange: (bar: number | null) => void): WebSocket {
+  public connectToWS(): WebSocket {
     this.websocket = new WebSocket('ws://localhost:8000/ws')
     this.websocket.onopen = (event) => {
       console.log('connected')
       this.websocket?.send('client connected')
     }
+
+    return this.websocket
+  }
+
+  public subscribeToWS(onBarChange: (bar: number | null) => void, onSongEnd: () => void): void {
+    if (!this.websocket) {
+      throw new Error('No websocket connection')
+    }
     this.websocket.onmessage = (event) => {
       console.log('message', event.data)
       try {
         const data = JSON.parse(event.data)
-        if (data.type === 'bar') {
-          console.log('bar', data)
-          onBarChange(data.bar)
+        switch (data.type) {
+          case 'end':
+            onSongEnd()
+            break
+          case 'bar':
+            onBarChange(data.bar)
+            break
+          default:
+            console.error('unknown ws message type', data)
         }
       } catch (error) {
         console.error('error parsing', event.data)
       }
     }
-    return this.websocket
   }
 
   public async setCurrentSong(songName: string): Promise<void> {
@@ -64,6 +77,7 @@ export class ApiService {
     } catch (err: AxiosError | unknown) {
       if(axios.isAxiosError(err)) {
         console.error(err.response?.data)
+        throw new NoSongLoadedError()
       }
     }
   }
