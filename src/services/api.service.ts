@@ -1,6 +1,6 @@
 import axios, { AxiosError }  from "axios"
 import { Song } from "../types"
-import { NoSongLoadedError } from "./api.service.errors"
+import { NoSongLoadedError, getApiErrors } from "./api.service.errors"
 
 type GetSongsResponseObject = {
   songs: string[]
@@ -64,10 +64,7 @@ export class ApiService {
     try {
       const setCurrentSongResponse = await axios.post<Song>(`${this.url}/song`, {name: songName})
     } catch (err: AxiosError | unknown) {
-      if(axios.isAxiosError(err)) {
-        console.error(err.response?.data)
-      }
-      throw new Error('Failed to set current song')
+      getApiErrors(err)
     }
   }
 
@@ -85,9 +82,7 @@ export class ApiService {
     try {
       await axios.post(`${this.url}/stop`)
     } catch (err: AxiosError | unknown) {
-      if(axios.isAxiosError(err)) {
-        console.error(err.response?.data)
-      }
+        throw getApiErrors(err)
     }
   }
 
@@ -95,9 +90,7 @@ export class ApiService {
     try {
       await axios.post(`${this.url}/transition`, {bar})
     } catch (err: AxiosError | unknown) {
-      if(axios.isAxiosError(err)) {
-        throw new NoSongLoadedError()
-      }
+        throw getApiErrors(err)
     }
   }
 
@@ -107,10 +100,7 @@ export class ApiService {
       const songs =  await axios.get<GetSongsResponseObject>(`${this.url}/songs`)
       return songs.data.songs
     } catch (err: AxiosError | unknown) {
-      if(axios.isAxiosError(err)) {
-        console.error(err.response?.data)
-      }
-      throw new Error('Failed to get available songs')
+        throw getApiErrors(err)
     }
   }
   
