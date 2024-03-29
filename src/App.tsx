@@ -8,11 +8,15 @@ function App() {
   const [isReady, setIsReady] = React.useState<boolean>(false)
 
   useEffect(() => {
-    const _apiService = new ApiService()
-    const websocket = _apiService.connectToWS()
-    apiService.current = _apiService
-    setIsReady(true)
-   return () => websocket.close()
+    (async () => {
+
+      const _apiService = new ApiService()
+      await _apiService.connectToWS()
+      apiService.current = _apiService
+      setIsReady(true)
+    })()
+    return () => apiService.current?.closeWebsocket()
+
   }, [apiService])
   return (
     <div>

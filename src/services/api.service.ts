@@ -21,22 +21,59 @@ export class ApiService {
 
   url: string = 'http://localhost:8000'
   websocket: WebSocket | null = null
+  websocketFirstSetup: boolean = false
+
+  wsCallbacks : ({
+    onBarChange: (bar: number | null) => void,
+    onSongEnd: () => void
+  } | undefined)
+
+  private async reconnectToWsIfNecessary(): Promise<void> {
+    console.log("reconnect")
+
+    if (this.websocket?.readyState !== this.websocket?.OPEN && this.websocketFirstSetup) {
+
+      this.connectToWS()
+      this.registerWsHandlers()
+    }
+  }
 
   public async getTimeline(): Promise<string> {
     return 'timeline'
   }
 
-  public connectToWS(): WebSocket {
-    this.websocket = new WebSocket('ws://localhost:8000/ws')
-    this.websocket.onopen = (event) => {
-      console.log('connected')
-      this.websocket?.send('client connected')
-    }
+  public connectToWS(): Promise<void> {
+    return new Promise((resolve, reject) => {
+        try {
+        this.websocket = new WebSocket('ws://localhost:8000/ws')
+        console.log("here")
+        this.websocket.onopen = (event) => {
+          console.log('connected')
+          this.websocket?.send('client connected')
+          resolve()
+        }
+      } catch (error) {
+        reject(error)
+      }
+    })
+  }
 
-    return this.websocket
+  public closeWebsocket(): void {
+    this.websocket?.close()
   }
 
   public subscribeToWS(onBarChange: (bar: number | null) => void, onSongEnd: () => void): void {
+    console.log("firstsetup")
+
+    this.wsCallbacks = {
+      onBarChange,
+      onSongEnd
+    }
+    this.registerWsHandlers()
+    this.websocketFirstSetup = true
+  }
+
+  private registerWsHandlers(): void {
     if (!this.websocket) {
       throw new Error('No websocket connection')
     }
@@ -46,10 +83,10 @@ export class ApiService {
         const data = JSON.parse(event.data)
         switch (data.type) {
           case 'end':
-            onSongEnd()
+            this.wsCallbacks?.onSongEnd()
             break
           case 'bar':
-            onBarChange(data.bar)
+            this.wsCallbacks?.onBarChange(data.bar)
             break
           default:
             console.error('unknown ws message type', data)
@@ -61,6 +98,7 @@ export class ApiService {
   }
 
   public async setCurrentSong(songName: string): Promise<void> {
+    this.reconnectToWsIfNecessary()
     try {
       const setCurrentSongResponse = await axios.post<Song>(`${this.url}/song`, {name: songName})
     } catch (err: AxiosError | unknown) {
@@ -69,6 +107,8 @@ export class ApiService {
   }
 
   public async play(): Promise<void> {
+
+    this.reconnectToWsIfNecessary()
     try {
       await axios.post(`${this.url}/play`, {startBar: 0})
     } catch (err: AxiosError | unknown) {
@@ -79,6 +119,7 @@ export class ApiService {
     }
   }
   public async stop(): Promise<void> {
+    this.reconnectToWsIfNecessary()
     try {
       await axios.post(`${this.url}/stop`)
     } catch (err: AxiosError | unknown) {
@@ -87,6 +128,7 @@ export class ApiService {
   }
 
   public async transitionTo(bar: number): Promise<void> {
+    this.reconnectToWsIfNecessary()
     try {
       await axios.post(`${this.url}/transition`, {bar})
     } catch (err: AxiosError | unknown) {
@@ -96,6 +138,7 @@ export class ApiService {
 
 
   public async getAvailableSongs(): Promise<string[]> {
+    this.reconnectToWsIfNecessary()
     try {
       const songs =  await axios.get<GetSongsResponseObject>(`${this.url}/songs`)
       return songs.data.songs
@@ -105,6 +148,7 @@ export class ApiService {
   }
   
   public async getSongInfo(): Promise<Song | null> {
+    this.reconnectToWsIfNecessary()
     try {
       const songInfo = await axios.get<SetCurrentSongResponseObject>(`${this.url}/song`)
       return new Song(songInfo.data)
