@@ -112,10 +112,7 @@ export class ApiService {
     try {
       await axios.post(`${this.url}/play`, {startBar: 0})
     } catch (err: AxiosError | unknown) {
-      if(axios.isAxiosError(err)) {
-        console.error(err.response?.data)
-        throw new NoSongLoadedError()
-      }
+        throw getApiErrors(err)
     }
   }
   public async stop(): Promise<void> {

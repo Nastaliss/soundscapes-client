@@ -14,13 +14,15 @@ export class NoSongPlayingError extends SoundScapeError {
 export class AlreadyTransitionningError extends SoundScapeError {
   message: string = "Already transitionning"
 }
-
+export class SongAlreadyPlayingError extends SoundScapeError {
+  message: string = "Already playing"
+}
 const errorCodeToError :Record<string, new() => SoundScapeError> = {
   "already_transitionning": AlreadyTransitionningError,
   "bar_out_of_bounds": BarOutOfBoundsError,
   "no_song_loaded": NoSongLoadedError,
   "no_song_playing": NoSongPlayingError,
-
+  "song_already_playing": SongAlreadyPlayingError
 }
 
 export const getApiErrors = (error: AxiosError | unknown): Error | SoundScapeError =>{
