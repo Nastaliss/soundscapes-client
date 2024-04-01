@@ -1,8 +1,9 @@
 import React from 'react'
+import './TimelineBar.css'
 
-const TimelineBar = ({className, text, onClick}: {className: string, text: string, onClick: () => void}) => {
+const TimelineBar = ({text, onClick, isCurrent}: {text: string, onClick: () => void, isCurrent: boolean}) => {
   return (
-    <div className={className} onClick={onClick}>{text}</div>
+    <div className={`timeline-bar${isCurrent ? " current" : ""}`} onClick={onClick}>{text}</div>
   )
 }
 

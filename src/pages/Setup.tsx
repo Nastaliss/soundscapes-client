@@ -2,22 +2,38 @@ import React from 'react'
 import Timeline from '../components/timeline'
 import { ApiService } from '../services/api.service'
 import { Song } from '../types'
+import { NoSongLoadedError } from '../services/api.service.errors'
 
 
-const Setup = () => {
+const Setup = ({apiService}: {apiService: ApiService}) => {
   const [songName, setSongName] = React.useState<string| undefined>(undefined)
   const [playing, setPlaying] = React.useState<boolean>(false)
-  const [transitionBar, setTransitionBar] = React.useState<number>(0)
   const [availableSongs, setAvailableSongs] = React.useState<string[]>([])
   const [songInfo, setSongInfo] = React.useState<Song|null>(null)
-  const apiService = new ApiService()
+  const [currentBar, setCurrentBar] = React.useState<number | null>(null)
 
   React.useEffect(() => {
     (async () => {
+      apiService.subscribeToWS(
+        setCurrentBar,
+        onSongEnd
+      )
       const songs = await apiService.getAvailableSongs()
       setAvailableSongs(songs)
+      const currentSong = await apiService.getSongInfo()
+      if (currentSong !== null) {
+        setPlaying(currentSong.playing)
+        setSongInfo(currentSong)
+        setSongName(currentSong.name)
+      }
+      console.log(currentSong)
     })()
-  }, [])
+  }, [apiService])
+
+  const onSongEnd = () => {
+    setPlaying(false)
+    setCurrentBar(null)
+  }
 
   const onConfirm = async () => {
     console.log('here', songName)
@@ -35,23 +51,15 @@ const Setup = () => {
     setSongName(e.target.value)
   }
 
-  const onTransitionInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let bar = parseInt(e.target.value)
-    if (isNaN(bar) || bar < 0) {
-      bar = 0
-    } else if (bar > 100) {
+  const onStart = async () => {
+    try {
+      await apiService.play()
+      setPlaying(true)
+    } catch (err) {
+      if (err instanceof NoSongLoadedError) {
+        setSongInfo(null)
+      }
     }
-    console.log(bar)
-    setTransitionBar(bar)
-  }
-
-  const onTransitionButtonPress = () => {
-    apiService.transitionTo(transitionBar)
-  }
-
-  const onStart = () => {
-    apiService.play()
-    setPlaying(true)
   }
 
   const onStop = () => {
@@ -59,30 +67,32 @@ const Setup = () => {
     setPlaying(false)
   }
 
-  const onBarClick = (bar: number) => {
-    apiService.transitionTo(bar)
+  const onBarClick = async (bar: number) => {
+    try {
+      await apiService.transitionTo(bar)
+    }  catch (err) {
+      if (err instanceof NoSongLoadedError) {
+        setSongInfo(null)
+      }
+    }
   }
 
   return (
     <div>
-        <h1>Setup</h1>
-        <label htmlFor="songs">Choose a song:</label>
-        <select name="songs" id="songs" value={songName} onChange={onInputChange}>
-          <option value="default">Select a song</option>
-          {availableSongs.map((song, index) => <option key={index} value={song}>{song}</option>
-          )}
-        </select>
-        {songInfo && <Timeline song={songInfo} onBarClick={onBarClick}/>}
+      <h1>Setup</h1>
+      <label htmlFor="songs">Choose a song:</label>
+      <select name="songs" id="songs" value={songName} onChange={onInputChange}>
+        <option value="default">Select a song</option>
+        {availableSongs.map((song, index) => <option key={index} value={song}>{song}</option>
+        )}
+      </select>
+      {songInfo && <Timeline song={songInfo} onBarClick={onBarClick} currentBar={currentBar}/>}
 
-        <button onClick={onConfirm}>Confirm</button>
-        <button onClick={onStart}>Start</button>
-        <button onClick={onStop}>Stop</button>
-        {playing ? <div>
-          <input onChange={onTransitionInputChange} value={transitionBar}/>
-          <button onClick={onTransitionButtonPress}>Transition</button>
-        </div> : <div>
-          
-        </div>}
+      <button onClick={onConfirm}>Confirm</button>
+      <button onClick={onStart}>Start</button>
+      <button onClick={onStop}>Stop</button>
+      <p>Song selected ? {songInfo ===null ? "no" : "yes"}</p>
+      <p>Playing ? {playing ? "yes" :"no"}</p>
     </div>
   )
 }
