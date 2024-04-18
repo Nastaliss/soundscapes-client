@@ -25,6 +25,7 @@ export class ApiService {
 
   wsCallbacks : ({
     onBarChange: (bar: number | null) => void,
+    onSubBarChange: (subBar: number) => void,
     onSongEnd: () => void
   } | undefined)
 
@@ -62,12 +63,13 @@ export class ApiService {
     this.websocket?.close()
   }
 
-  public subscribeToWS(onBarChange: (bar: number | null) => void, onSongEnd: () => void): void {
+  public subscribeToWS(onBarChange: (bar: number | null) => void, onSubBarChange : (subBar: number) => void, onSongEnd: () => void): void {
     console.log("firstsetup")
 
     this.wsCallbacks = {
       onBarChange,
-      onSongEnd
+      onSubBarChange,
+      onSongEnd,
     }
     this.registerWsHandlers()
     this.websocketFirstSetup = true
@@ -87,6 +89,9 @@ export class ApiService {
             break
           case 'bar':
             this.wsCallbacks?.onBarChange(data.bar)
+            break
+          case 'subBar':
+            this.wsCallbacks?.onSubBarChange(data.subBar)
             break
           default:
             console.error('unknown ws message type', data)

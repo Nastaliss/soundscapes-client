@@ -1,20 +1,20 @@
-#timeline {
+  #timeline {
     position: relative;
     margin: 0 auto;
     padding: 0;
     list-style: none;
     width: 100%;
     background-color: grey;
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-start;
-    align-items: flex-start;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 66px);
+    justify-content: space-around;
+    padding: 10px;
+    box-sizing: border-box;
     .timeline-bar {
         border: 2px solid #f1f1f1;
-        width: 100%;
-        min-width: 30px;
-        max-width: 45px;
         cursor: pointer;
+        text-align: center;
+        padding: 5px;
+        margin: 1px;
     }
 }

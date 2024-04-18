@@ -10,7 +10,6 @@ const timeline = ({song, onBarClick, currentBar}: {song: Song, onBarClick: (barC
       {[...Array(barCount).keys()].map((bar, index) =>
         <TimelineBar key={index} text={bar.toString()} onClick={() => onBarClick(bar)} isCurrent={index === currentBar}/>
       )}
-      <div className='timeline-bar'></div>
     </div>
 
   )

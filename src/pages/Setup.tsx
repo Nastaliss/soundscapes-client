@@ -11,11 +11,13 @@ const Setup = ({apiService}: {apiService: ApiService}) => {
   const [availableSongs, setAvailableSongs] = React.useState<string[]>([])
   const [songInfo, setSongInfo] = React.useState<Song|null>(null)
   const [currentBar, setCurrentBar] = React.useState<number | null>(null)
+  const [currentSubBar, setCurrentSubBar] = React.useState<number>(0)
 
   React.useEffect(() => {
     (async () => {
       apiService.subscribeToWS(
         setCurrentBar,
+        setCurrentSubBar,
         onSongEnd
       )
       const songs = await apiService.getAvailableSongs()
@@ -93,6 +95,8 @@ const Setup = ({apiService}: {apiService: ApiService}) => {
       <button onClick={onStop}>Stop</button>
       <p>Song selected ? {songInfo ===null ? "no" : "yes"}</p>
       <p>Playing ? {playing ? "yes" :"no"}</p>
+      <p>Current bar: {currentBar}</p>
+      <p>Current sub bar: {currentSubBar}</p>
     </div>
   )
 }
