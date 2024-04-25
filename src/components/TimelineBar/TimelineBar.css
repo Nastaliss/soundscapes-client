@@ -1,3 +1,28 @@
+.timeline-bar {
+  background-color: whitesmoke;
+  position: relative;
+}
 .timeline-bar.current {
   background-color: green;
+}
+
+.timeline-subbar {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  align-items: center;
+  position: absolute;
+  bottom: 0px;
+  left: 0;
+  right: 0;
+  padding: 0 10px;
+}
+
+.timeline-subbar-item{
+  color: gray;
+  font-size: xxx-large;
+}
+
+.timeline-subbar-item.current {
+  color: white;
 }

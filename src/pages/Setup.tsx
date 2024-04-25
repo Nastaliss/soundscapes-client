@@ -88,7 +88,7 @@ const Setup = ({apiService}: {apiService: ApiService}) => {
         {availableSongs.map((song, index) => <option key={index} value={song}>{song}</option>
         )}
       </select>
-      {songInfo && <Timeline song={songInfo} onBarClick={onBarClick} currentBar={currentBar}/>}
+      {songInfo && <Timeline song={songInfo} onBarClick={onBarClick} currentBar={currentBar} currentSubbar={currentSubBar}/>}
 
       <button onClick={onConfirm}>Confirm</button>
       <button onClick={onStart}>Start</button>

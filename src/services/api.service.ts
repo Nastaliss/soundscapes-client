@@ -83,14 +83,13 @@ export class ApiService {
       console.log('message', event.data)
       try {
         const data = JSON.parse(event.data)
+        console.log(data)
         switch (data.type) {
           case 'end':
             this.wsCallbacks?.onSongEnd()
             break
           case 'bar':
             this.wsCallbacks?.onBarChange(data.bar)
-            break
-          case 'subBar':
             this.wsCallbacks?.onSubBarChange(data.subBar)
             break
           default:
