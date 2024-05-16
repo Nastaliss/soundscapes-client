@@ -1,13 +1,14 @@
 import axios, { AxiosError }  from "axios"
-import { Song } from "../types"
+import { Song, SongBase } from "../types"
 import { NoSongLoadedError, getApiErrors } from "./api.service.errors"
 
 type GetSongsResponseObject = {
-  songs: string[]
+  songs: SongBase[]
 }
 
 type SetCurrentSongResponseObject = {
   name: string
+  id: number
   duration: number
   timeSignature: number
   barCount: number
@@ -104,7 +105,7 @@ export class ApiService {
   public async setCurrentSong(songName: string): Promise<void> {
     this.reconnectToWsIfNecessary()
     try {
-      const setCurrentSongResponse = await axios.post<Song>(`${this.url}/song`, {name: songName})
+      const setCurrentSongResponse = await axios.post<Song>(`${this.url}/song/${songName}`)
     } catch (err: AxiosError | unknown) {
       getApiErrors(err)
     }
@@ -138,7 +139,7 @@ export class ApiService {
   }
 
 
-  public async getAvailableSongs(): Promise<string[]> {
+  public async getAvailableSongs(): Promise<SongBase[]> {
     this.reconnectToWsIfNecessary()
     try {
       const songs =  await axios.get<GetSongsResponseObject>(`${this.url}/songs`)
@@ -160,7 +161,17 @@ export class ApiService {
         }
         console.error(err.response?.data)
       }
-      throw new Error('Failed to get song info')
+      return null
+      // throw new Error('Failed to get song info')
+    }
+  }
+
+  public async setSongInfo(songId: number, bpm: number, timeSignature: number): Promise<void> {
+    this.reconnectToWsIfNecessary()
+    try {
+      await axios.post(`${this.url}/song/${songId}/info`, {bpm, timeSignature})
+    } catch (err: AxiosError | unknown) {
+        throw getApiErrors(err)
     }
   }
 }

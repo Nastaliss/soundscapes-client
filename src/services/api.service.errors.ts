@@ -17,12 +17,20 @@ export class AlreadyTransitionningError extends SoundScapeError {
 export class SongAlreadyPlayingError extends SoundScapeError {
   message: string = "Already playing"
 }
+export class SongNotFoundError extends SoundScapeError {
+  message: string = "Song not found"
+}
+export class SongInfoNotFoundError extends SoundScapeError {
+  message: string = "Song info not found"
+}
 const errorCodeToError :Record<string, new() => SoundScapeError> = {
   "already_transitionning": AlreadyTransitionningError,
   "bar_out_of_bounds": BarOutOfBoundsError,
   "no_song_loaded": NoSongLoadedError,
   "no_song_playing": NoSongPlayingError,
-  "song_already_playing": SongAlreadyPlayingError
+  "song_already_playing": SongAlreadyPlayingError,
+  "song_not_found": SongNotFoundError,
+  "song_info_not_found": SongInfoNotFoundError,
 }
 
 export const getApiErrors = (error: AxiosError | unknown): Error | SoundScapeError =>{
